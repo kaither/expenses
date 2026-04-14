@@ -1,0 +1,7 @@
+node_modules
+dist
+.env
+server/.env
+server/learned-mappings.json
+.vite
+vite.config.ts.timestamp-*

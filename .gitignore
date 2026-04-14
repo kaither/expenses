@@ -1,0 +1,6 @@
+# Exclude everything outside of web/ for now — the legacy Java app and
+# Eclipse workspace live here locally but aren't part of this PR.
+eclipse/
+eclipse-workspace/
+
+# Per-directory ignores for the web app are in web/.gitignore.
