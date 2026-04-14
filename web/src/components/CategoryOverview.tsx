@@ -12,8 +12,10 @@ import { CATEGORIES, type Category } from "../lib/types";
 // Category-stable color palette; works in both light and dark mode.
 const CATEGORY_COLORS: Record<Category, string> = {
   Allowance: "#8b949e",
+  Savings: "#2ea043",
   "Auto Save Transfer": "#56d364",
-  Baby: "#f778ba",
+  Childcare: "#f778ba",
+  "Credit Card Payments": "#d2a8ff",
   Bills: "#ff7b72",
   Groceries: "#3fb950",
   Leisure: "#a5a5ff",
@@ -27,30 +29,64 @@ export function CategoryOverview({
   totals: Record<Category, number>;
 }) {
   const theme = useTheme();
-  const grandTotal = CATEGORIES.reduce((s, c) => s + totals[c], 0);
-  const data = CATEGORIES.filter((c) => totals[c] > 0).map((c) => ({
+  const grandTotal = CATEGORIES.reduce(
+    (s, c) => (c === "Savings" ? s : s + totals[c]),
+    0,
+  );
+  const data = CATEGORIES.filter((c) => c !== "Savings" && totals[c] > 0).map((c) => ({
     name: c,
     value: Number(totals[c].toFixed(2)),
   }));
 
+  const savingsTotal = totals.Savings ?? 0;
+
   return (
     <Box>
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Typography variant="caption" color="text.secondary" sx={{ textTransform: "uppercase", letterSpacing: 0.6 }}>
-            Total spend
-          </Typography>
-          <Typography variant="h3" sx={{ fontWeight: 700, mt: 0.5, letterSpacing: -1 }}>
-            ${grandTotal.toFixed(2)}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            across {data.length} categor{data.length === 1 ? "y" : "ies"}
-          </Typography>
-        </CardContent>
-      </Card>
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid item xs={12} sm={6}>
+          <Card sx={{ height: "100%" }}>
+            <CardContent>
+              <Typography variant="caption" color="text.secondary" sx={{ textTransform: "uppercase", letterSpacing: 0.6 }}>
+                Total spend
+              </Typography>
+              <Typography variant="h3" sx={{ fontWeight: 700, mt: 0.5, letterSpacing: -1 }}>
+                ${grandTotal.toFixed(2)}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                across {data.length} categor{data.length === 1 ? "y" : "ies"}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <Card sx={{ height: "100%" }}>
+            <CardContent>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Box
+                  sx={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: "50%",
+                    bgcolor: CATEGORY_COLORS.Savings,
+                  }}
+                />
+                <Typography variant="caption" color="text.secondary" sx={{ textTransform: "uppercase", letterSpacing: 0.6 }}>
+                  Savings
+                </Typography>
+              </Box>
+              <Typography variant="h3" sx={{ fontWeight: 700, mt: 0.5, letterSpacing: -1, color: CATEGORY_COLORS.Savings }}>
+                ${savingsTotal.toFixed(2)}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                transferred to savings
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        {CATEGORIES.map((cat) => {
+        {CATEGORIES.filter((c) => c !== "Savings").map((cat) => {
           const amt = totals[cat];
           const pct = grandTotal > 0 ? (amt / grandTotal) * 100 : 0;
           return (
