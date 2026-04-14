@@ -1,5 +1,6 @@
+import { useMemo, useState } from "react";
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
-import { Box, Chip } from "@mui/material";
+import { Box, Chip, TextField } from "@mui/material";
 import type { CategorizedTransaction, ClassificationSource } from "../lib/types";
 
 const SOURCE_COLOR: Record<
@@ -35,10 +36,28 @@ const columns: GridColDef<CategorizedTransaction>[] = [
 ];
 
 export function CategoryTable({ rows }: { rows: CategorizedTransaction[] }) {
+  const [filter, setFilter] = useState("");
+  const filtered = useMemo(() => {
+    const q = filter.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter(
+      (r) =>
+        r.location.toLowerCase().includes(q) ||
+        r.date.toLowerCase().includes(q) ||
+        r.amount.toFixed(2).includes(q),
+    );
+  }, [rows, filter]);
   return (
     <Box sx={{ width: "100%" }}>
+      <TextField
+        size="small"
+        placeholder="Filter by location, date, or amount…"
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+        sx={{ mb: 2, width: { xs: "100%", sm: 360 } }}
+      />
       <DataGrid
-        rows={rows}
+        rows={filtered}
         columns={columns}
         density="compact"
         autoHeight

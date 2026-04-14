@@ -23,8 +23,10 @@ function isAllowance(tx: Transaction): boolean {
 function fileMatch(location: string, mappings: Mappings): Category | null {
   // Auto Save Transfer checked first: its vendor string is "AUTO SAVE TRANSFER"
   // which would also match the hardcoded Allowance rule ($100 TRANSFER) otherwise.
+  if (matchesAny(location, mappings.Savings)) return "Savings";
   if (matchesAny(location, mappings["Auto Save Transfer"])) return "Auto Save Transfer";
-  if (matchesAny(location, mappings.Baby)) return "Baby";
+  if (matchesAny(location, mappings.Childcare)) return "Childcare";
+  if (matchesAny(location, mappings["Credit Card Payments"])) return "Credit Card Payments";
   if (matchesAny(location, mappings.Bills)) return "Bills";
   if (matchesAny(location, mappings.Groceries)) return "Groceries";
   if (matchesAny(location, mappings.Leisure)) return "Leisure";

@@ -5,3 +5,4 @@ server/.env
 server/learned-mappings.json
 .vite
 vite.config.ts.timestamp-*
+_killports.ps1

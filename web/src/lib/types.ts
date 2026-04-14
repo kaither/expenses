@@ -7,8 +7,10 @@ export type Transaction = {
 
 export const CATEGORIES = [
   "Allowance",
+  "Savings",
   "Auto Save Transfer",
-  "Baby",
+  "Childcare",
+  "Credit Card Payments",
   "Bills",
   "Groceries",
   "Leisure",
@@ -24,8 +26,10 @@ export type Mappings = {
   Leisure: string[];
   Bills: string[];
   Gas: string[];
-  Baby: string[];
+  Childcare: string[];
+  "Credit Card Payments": string[];
   "Auto Save Transfer": string[];
+  Savings: string[];
   MiscMap: MiscMapEntry[];
 };
 

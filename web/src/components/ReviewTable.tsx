@@ -5,6 +5,7 @@ import {
   MenuItem,
   Select,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
 import {
@@ -40,8 +41,21 @@ export function ReviewTable({ rows, onSave }: Props) {
   const [selection, setSelection] = useState<GridRowSelectionModel>([]);
   const [bulkCategory, setBulkCategory] = useState<Category>("Miscellaneous");
   const [saving, setSaving] = useState(false);
+  const [filter, setFilter] = useState("");
 
   const pendingCount = Object.keys(edits).length;
+
+  const filteredRows = useMemo(() => {
+    const q = filter.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter(
+      (r) =>
+        r.location.toLowerCase().includes(q) ||
+        r.merchantKey.toLowerCase().includes(q) ||
+        r.date.toLowerCase().includes(q) ||
+        r.amount.toFixed(2).includes(q),
+    );
+  }, [rows, filter]);
 
   const columns = useMemo<GridColDef<ReviewRow>[]>(
     () => [
@@ -122,9 +136,17 @@ export function ReviewTable({ rows, onSave }: Props) {
     <Box>
       <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2, flexWrap: "wrap" }}>
         <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
-          {rows.length} unmapped row{rows.length === 1 ? "" : "s"}
+          {rows.length} row{rows.length === 1 ? "" : "s"}
+          {filter && ` · ${filteredRows.length} shown`}
           {pendingCount > 0 && ` · ${pendingCount} merchant${pendingCount === 1 ? "" : "s"} pending`}
         </Typography>
+        <TextField
+          size="small"
+          placeholder="Filter…"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          sx={{ width: 220 }}
+        />
         <Select
           size="small"
           value={bulkCategory}
@@ -155,7 +177,7 @@ export function ReviewTable({ rows, onSave }: Props) {
         </Button>
       </Stack>
       <DataGrid
-        rows={rows}
+        rows={filteredRows}
         columns={columns}
         density="compact"
         autoHeight

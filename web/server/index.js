@@ -16,8 +16,10 @@ const MAPPINGS_DIR =
 const LEARNED_PATH = path.join(__dirname, "learned-mappings.json");
 const CATEGORIES = [
   "Allowance",
+  "Savings",
   "Auto Save Transfer",
-  "Baby",
+  "Childcare",
+  "Credit Card Payments",
   "Bills",
   "Groceries",
   "Leisure",
@@ -30,8 +32,10 @@ const CATEGORY_FILES = {
   Leisure: "LeisureExpenses.txt",
   Bills: "BillsExpenses.txt",
   Gas: "GasExpenses.txt",
-  Baby: "BabyExpenses.txt",
+  Childcare: "ChildcareExpenses.txt",
+  "Credit Card Payments": "CreditCardPaymentsExpenses.txt",
   "Auto Save Transfer": "AutoSaveTransferExpenses.txt",
+  Savings: "SavingsExpenses.txt",
 };
 const MISC_MAP_FILE = "MiscTxLocationMap.txt";
 

@@ -19,7 +19,7 @@ import { CategoryTable } from "./components/CategoryTable";
 import { AdviceCard } from "./components/AdviceCard";
 import { ReviewTable, type ReviewRow } from "./components/ReviewTable";
 import { parseFirstbankCsv } from "./lib/parseCsv";
-import { categorize, summarize } from "./lib/categorize";
+import { categorize, condenseLocation, summarize } from "./lib/categorize";
 import { loadLearned, loadMappings } from "./lib/mappings";
 import {
   CATEGORIES,
@@ -50,10 +50,8 @@ export default function App({ mode, onToggleMode }: AppProps) {
       .catch((e) => setLoadError(String(e?.message || e)));
   }, []);
 
-  const { allClassified, reviewRows } = useMemo(() => {
-    if (!mappings || !parsedTxs) {
-      return { allClassified: null as CategorizedTransaction[] | null, reviewRows: [] as ReviewRow[] };
-    }
+  const allClassified = useMemo(() => {
+    if (!mappings || !parsedTxs) return null as CategorizedTransaction[] | null;
     const { classified, unresolved } = categorize(parsedTxs, mappings, learned);
     const unmapped: CategorizedTransaction[] = unresolved.map((tx) => ({
       id: tx.id,
@@ -63,20 +61,24 @@ export default function App({ mode, onToggleMode }: AppProps) {
       category: "Miscellaneous",
       source: "unmapped",
     }));
-    const review: ReviewRow[] = unresolved.map((tx) => ({
-      id: tx.id,
-      date: tx.date,
-      location: tx.location,
-      amount: tx.amount,
-      merchantKey: tx.merchantKey,
-    }));
-    return { allClassified: [...classified, ...unmapped], reviewRows: review };
+    return [...classified, ...unmapped];
   }, [parsedTxs, mappings, learned]);
 
   const summary = useMemo(() => {
     if (!allClassified || !mappings) return null;
     return summarize(allClassified, mappings.MiscMap);
   }, [allClassified, mappings]);
+
+  const miscReviewRows = useMemo<ReviewRow[]>(() => {
+    if (!summary || !mappings) return [];
+    return summary.byCategory.Miscellaneous.map((tx) => ({
+      id: tx.id,
+      date: tx.date,
+      location: tx.location,
+      amount: tx.amount,
+      merchantKey: condenseLocation(tx.location, mappings.MiscMap),
+    }));
+  }, [summary, mappings]);
 
   async function handleFile(text: string, name: string) {
     setFileName(name);
@@ -101,12 +103,7 @@ export default function App({ mode, onToggleMode }: AppProps) {
     }
   }
 
-  const showReview = reviewRows.length > 0;
-  const tabs: (Category | "Overview" | "Review")[] = [
-    "Overview",
-    ...CATEGORIES,
-    ...(showReview ? (["Review"] as const) : []),
-  ];
+  const tabs: (Category | "Overview")[] = ["Overview", ...CATEGORIES];
 
   useEffect(() => {
     if (tab >= tabs.length) setTab(0);
@@ -170,9 +167,7 @@ export default function App({ mode, onToggleMode }: AppProps) {
                     label={
                       t === "Overview"
                         ? "Overview"
-                        : t === "Review"
-                          ? `Review · ${reviewRows.length}`
-                          : `${t} · $${summary.totals[t as Category].toFixed(0)}`
+                        : `${t} · $${summary.totals[t as Category].toFixed(0)}`
                     }
                   />
                 ))}
@@ -180,8 +175,6 @@ export default function App({ mode, onToggleMode }: AppProps) {
             </Box>
             {tabs[tab] === "Overview" ? (
               <CategoryOverview totals={summary.totals} />
-            ) : tabs[tab] === "Review" ? (
-              <ReviewTable rows={reviewRows} onSave={handleSaveMappings} />
             ) : (
               (() => {
                 const cat = tabs[tab] as Category;
@@ -192,7 +185,11 @@ export default function App({ mode, onToggleMode }: AppProps) {
                       total={summary.totals[cat]}
                       topVendors={summary.topVendors[cat]}
                     />
-                    <CategoryTable rows={summary.byCategory[cat]} />
+                    {cat === "Miscellaneous" ? (
+                      <ReviewTable rows={miscReviewRows} onSave={handleSaveMappings} />
+                    ) : (
+                      <CategoryTable rows={summary.byCategory[cat]} />
+                    )}
                   </>
                 );
               })()
